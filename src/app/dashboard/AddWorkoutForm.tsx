@@ -16,7 +16,7 @@ export default function AddWorkoutForm() {
     setLoading(true);
     setError('');
 
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setError('You must be logged in to log workouts');
       setLoading(false);

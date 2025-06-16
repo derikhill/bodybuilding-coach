@@ -3,7 +3,11 @@ import { useState } from 'react';
 import supabase from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
-export default function AuthForm() {
+interface AuthFormProps {
+  onLogin: () => void;
+}
+
+export default function AuthForm({ onLogin }: AuthFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,9 +26,15 @@ export default function AuthForm() {
 
     if (error) {
       setError(error.message);
-    } else {
-      router.push('/dashboard');
+      setLoading(false);
+      return;
     }
+  
+    onLogin();
+    // Optional: wait a short moment to let the session propagate
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 300);  
 
     setLoading(false);
   };

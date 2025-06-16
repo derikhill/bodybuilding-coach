@@ -4,13 +4,13 @@ export const dynamic = 'force-dynamic';
 import WorkoutEditor from '@/components/WorkoutEditor';
 import supabase from '@/lib/supabase';
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditWorkoutPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const { data: workout, error } = await supabase
     .from('workouts')

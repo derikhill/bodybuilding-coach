@@ -1,11 +1,13 @@
 import { Dumbbell, History, Apple } from "lucide-react";
 
+type TabType = 'log' | 'history' | 'nutrition-history';
+
 export default function DesktopTabs({
   activeTab,
   setActiveTab,
 }: {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
 }) {
   const tabs = [
     { key: "log", label: "Log", icon: Dumbbell },
@@ -18,7 +20,7 @@ export default function DesktopTabs({
       {tabs.map(({ key, label, icon: Icon }) => (
         <button
           key={key}
-          onClick={() => setActiveTab(key)}
+          onClick={() => setActiveTab(key as TabType)}
           className={`flex items-center gap-2 px-4 py-2 transition-all duration-300 relative
             ${activeTab === key ? "text-blue-600 font-semibold glow-tab" : "text-gray-500 hover:text-blue-500"}
           `}

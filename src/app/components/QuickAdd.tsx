@@ -4,11 +4,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PostgrestError } from '@supabase/supabase-js';
 
-export default function QuickAddRoutine({userId, goBack }: { userId: string }) {
-  const [routines, setRoutines] = useState([]);
+interface RoutineSet {
+  id: string;
+  set_number: number;
+  warmup: boolean;
+  reps: number;
+  weight: number;
+  rir?: number;
+}
+
+interface RoutineExercise {
+  id: string;
+  name: string;
+  order_index: number;
+  is_superset: boolean;
+  notes?: string;
+  routine_sets: RoutineSet[];
+}
+
+interface Routine {
+  id: string;
+  title: string;
+  workout_type: string;
+  notes?: string;
+  routine_exercises: RoutineExercise[];
+}
+
+export default function QuickAddRoutine({userId, goBack }: { userId: string; goBack: () => void }) {
+  const [routines, setRoutines] = useState<Routine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<PostgrestError | null>(null);
 
   useEffect(() => {
     async function fetchRoutines() {
@@ -35,9 +62,9 @@ export default function QuickAddRoutine({userId, goBack }: { userId: string }) {
     }
 
     fetchRoutines();
-  }, []);
+  }, [userId]);
 
-  const handleQuickAdd = async (routineId) => {
+  const handleQuickAdd = async (routineId: string) => {
     // This would normally trigger a backend call to create a new workout from the routine
     const { error } = await supabase.rpc('log_routine', { p_routine_id: routineId });
     if (error) {

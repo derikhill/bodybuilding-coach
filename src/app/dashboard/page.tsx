@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 import WorkoutForm from '@/components/WorkoutForm';
 import WorkoutHistory from '@/components/WorkoutHistory';
 import TabsNav from '@/components/TabsNav';
@@ -12,10 +13,10 @@ import QuickAdd from '@/components/QuickAdd';
 import NutritionDashboard from '@/components/NutritionDashboard';
 import NutritionLogForm from '@/components/NutritionLogForm';
 import NutritionGoalTracker from '@/components/NutritionGoalTracker';
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'log' | 'history' | 'nutrition-history'>('log');
   const [logMode, setLogMode] = useState<'form' | 'quick' | 'add-food' | null>(null);
@@ -41,7 +42,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-8 pb-16 bg-stone-800 min-h-screen">
-      <h1 className="text-2xl text-slate-100 font-bold mb-4">Welcome, {user?.email}</h1>
+      <h1 className="text-2xl text-slate-100 font-bold mb-4">Welcome, {user!.email}</h1>
 
       {/* Desktop Tabs */}
       <DesktopTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -73,23 +74,23 @@ export default function Dashboard() {
             )}
 
             {logMode === 'form' && (
-              <WorkoutForm userId={user.id} onNewWorkout={() => {}} goBack={() => setLogMode(null)} />
+              <WorkoutForm userId={user!.id} onNewWorkout={() => {}} goBack={() => setLogMode(null)} />
             )}
 
             {logMode === 'quick' && (
-              <QuickAdd userId={user.id} goBack={() => setLogMode(null)} />
+              <QuickAdd userId={user!.id} goBack={() => setLogMode(null)} />
             )}
 
             {logMode === 'add-food' && (
-              <NutritionLogForm userId={user.id} goBack={() => setLogMode(null)} />
+              <NutritionLogForm userId={user!.id} goBack={() => setLogMode(null)} />
             )}
           </TabContent>
           <TabContent tabKey="history" activeTab={activeTab}>
             <WorkoutHistory />
           </TabContent>
           <TabContent tabKey="nutrition-history" activeTab={activeTab}>
-            <NutritionGoalTracker userId={user.id}/>
-            <NutritionDashboard />
+            <NutritionGoalTracker userId={user!.id}/>
+            <NutritionDashboard userId={user!.id} />
           </TabContent>
         {/* </motion.div> */}
       </div>

@@ -4,18 +4,49 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import supabase from '@/lib/supabase';
 
-export default function WorkoutEditor({ workout }) {
+interface Workout {
+  id: string;
+  title: string;
+  date: string;
+  created_at: string;
+  notes?: string;
+  workout_type: string;
+  exercises: {
+    id: string;
+    name: string;
+    is_superset: boolean;
+    notes?: string;
+    sets: {
+      id: string;
+      set_number: number;
+      warmup: boolean;
+      reps: number;
+      weight: number;
+      rir?: number;
+    }[];
+    order_index: number;
+  }[];
+}
+
+type SetField = 'reps' | 'weight' | 'rir' | 'warmup';
+
+export default function WorkoutEditor({ workout }: { workout: Workout }) {
   const [title, setTitle] = useState(workout.title);
   const [date, setDate] = useState(workout.date);
   const [exercises, setExercises] = useState(workout.exercises || []);
 
-  const handleSetChange = (exerciseIndex, setIndex, field, value) => {
+  const handleSetChange = (exerciseIndex: number, setIndex: number, field: SetField, value: number | boolean) => {
     const updatedExercises = [...exercises];
-    updatedExercises[exerciseIndex].sets[setIndex][field] = value;
+    const set = updatedExercises[exerciseIndex].sets[setIndex];
+    if (field === 'warmup') {
+      set.warmup = value as boolean;
+    } else {
+      set[field] = value as number;
+    }
     setExercises(updatedExercises);
   };
 
-  const handleAddSet = (exerciseIndex) => {
+  const handleAddSet = (exerciseIndex: number) => {
     const updatedExercises = [...exercises];
     updatedExercises[exerciseIndex].sets.push({
       id: uuidv4(),
@@ -23,17 +54,18 @@ export default function WorkoutEditor({ workout }) {
       reps: 0,
       weight: 0,
       rir: 0,
+      warmup: false
     });
     setExercises(updatedExercises);
   };
 
-  const handleRemoveSet = (exerciseIndex, setIndex) => {
+  const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
     const updatedExercises = [...exercises];
     updatedExercises[exerciseIndex].sets.splice(setIndex, 1);
     setExercises(updatedExercises);
   };
   
-  const handleDeleteExercise = (exerciseIndex) => {
+  const handleDeleteExercise = (exerciseIndex: number) => {
     const updatedExercises = [...exercises];
     updatedExercises.splice(exerciseIndex, 1);
     setExercises(updatedExercises);
@@ -46,6 +78,7 @@ export default function WorkoutEditor({ workout }) {
         id: uuidv4(),
         name: '',
         notes: '',
+        is_superset: false,
         sets: [
           {
             id: uuidv4(),
@@ -56,6 +89,7 @@ export default function WorkoutEditor({ workout }) {
             warmup: false,
           },
         ],
+        order_index: exercises.length,
       },
     ]);
   };
@@ -65,6 +99,11 @@ export default function WorkoutEditor({ workout }) {
       .from('workouts')
       .update({ title, date })
       .eq('id', workout.id);
+
+    if (workoutError) {
+      alert('Failed to update workout: ' + workoutError.message);
+      return;
+    }
   
     const exerciseUpdates = exercises.map(async (exercise) => {
       const { id: exerciseId, name, notes, sets } = exercise;
