@@ -5,6 +5,7 @@ import { eachDayOfInterval, format, startOfMonth, endOfMonth, isSameDay, isBefor
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import supabase from '@/lib/supabase';
+import NutritionLogForm from './NutritionLogForm';
 
 interface NutritionLog {
   id: string;
@@ -16,24 +17,18 @@ interface NutritionLog {
   notes?: string;
 }
 
-export default function NutritionDashboard() {
+interface NutritionDashboardProps {
+  userId: string;
+}
+export default function NutritionDashboard({ userId }: NutritionDashboardProps) {
   const [logs, setLogs] = useState<NutritionLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calendarDays, setCalendarDays] = useState<Date[]>([]);
   const [selectedLog, setSelectedLog] = useState<NutritionLog | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
-  useEffect(() => {
-    const now = new Date();
-    const days = eachDayOfInterval({
-      start: startOfMonth(now),
-      end: endOfMonth(now),
-    });
-    setCalendarDays(days);
-  }, []);
+  const [modalMode, setModalMode] = useState<'view' | 'edit' | 'create'>('view');
 
   useEffect(() => {
     async function fetchLogs() {
@@ -43,6 +38,7 @@ export default function NutritionDashboard() {
       const { data, error } = await supabase
         .from('nutrition_logs')
         .select('*')
+        .eq('user_id', userId)
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: false });
@@ -57,7 +53,7 @@ export default function NutritionDashboard() {
 
     setLoading(true);
     fetchLogs();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, userId]);
 
   if (loading) return <div className="text-center text-slate-100">Loading...</div>;
   if (error) return <div className="text-center text-red-500">Error loading nutrition logs.</div>;
@@ -87,12 +83,18 @@ export default function NutritionDashboard() {
   const handleCardClick = (date: Date) => {
     const isoDate = format(date, "yyyy-MM-dd");
     const nutrition = getNutritionForDate(isoDate);
+    
     if (nutrition) {
       setSelectedLog(nutrition);
+      setModalMode('view');
+      setIsModalOpen(true);
+    } else {
+      setSelectedLog({ id: '', date: isoDate, calories: 0, protein: 0, carbs: 0, fat: 0 });
+      setModalMode('create');
       setIsModalOpen(true);
     }
   };
-
+  
   const filteredDates = eachDayOfInterval({
     start: startOfMonth(new Date(selectedYear, selectedMonth)),
     end: endOfMonth(new Date(selectedYear, selectedMonth)),
@@ -206,13 +208,15 @@ export default function NutritionDashboard() {
 
       {/* Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-gray-800">
           <DialogHeader>
             <DialogTitle>
-              Nutrition Log for {selectedLog && format(new Date(selectedLog.date), "MMMM d, yyyy")}
+              {modalMode === 'create'
+                ? 'New Nutrition Log'
+                : `Nutrition Log for ${selectedLog && format(parseISO(selectedLog.date), 'MMMM d, yyyy')}`}
             </DialogTitle>
           </DialogHeader>
-          {selectedLog && (
+          {modalMode === 'view' && selectedLog && (
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -238,7 +242,17 @@ export default function NutritionDashboard() {
                   <div className="text-sm text-gray-600">{selectedLog.notes}</div>
                 </div>
               )}
-            </div>
+            </div>  
+          )}
+
+          {(modalMode === 'edit' || modalMode === 'create') && (
+            <NutritionLogForm
+              userId={userId}
+              goBack={() => {
+                setIsModalOpen(false);
+                setModalMode('view');
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>

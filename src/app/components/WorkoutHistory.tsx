@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ThermometerSun } from 'lucide-react';
-import Link from 'next/link';
+// import Link from 'next/link';
 import supabase from '@/lib/supabase';
 
 interface Workout {
@@ -66,13 +66,13 @@ export default function WorkoutHistory() {
       <Accordion type="multiple" className="w-full max-w-xl justify-self-center">
         {workouts.map((workout) => (
           <AccordionItem key={workout.id} value={workout.id}>
-            <AccordionTrigger>
+            <AccordionTrigger className='py-0'>
               <div className="flex flex-col text-left">
                 <span className="font-medium text-2xl text-slate-100">{workout.title}</span>
                 <span className="text-sm text-gray-500">{new Date(workout.date).toISOString().split('T')[0]}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className='p-2 mb-4 bg-gray-50 border rounded'>
+            <AccordionContent className='p-2 bg-gray-50 border rounded'>
               {workout.exercises
                 .sort((a, b) => a.order_index - b.order_index) // Sort by order_index
                 .map((workoutExercise) => (
@@ -89,7 +89,7 @@ export default function WorkoutHistory() {
                       <AccordionContent>
                         <div className="flex flex-wrap">
                           <table className="border-separate border-spacing-1 w-full border border-slate-400 bg-stone-200 rounded text-slate-100">
-                            <thead className='border border-gray-300 bg-gray-700'>
+                            <thead className='border border-gray-300 text-slate-800'>
                               <tr>
                                 <td className='border border-slate-300 text-md px-4 py-2'>Warmup?</td>
                                 <td className='border border-slate-300 text-md px-4 py-2'>Weight</td>
@@ -97,9 +97,9 @@ export default function WorkoutHistory() {
                                 <td className='border border-slate-300 text-md px-4 py-2'>RIR</td>
                               </tr>
                             </thead>
-                            <tbody className="bg-gray-800">
+                            <tbody className="text-slate-800">
                               {workoutExercise.sets.map((set) => (
-                                <tr key={set.id} className="bg-gray-800">
+                                <tr key={set.id} className="text-slate-800">
                                   <td className='border border-slate-300 text-md px-4 py-2 text-center '>
                                     {set.warmup ? (
                                       <ThermometerSun className="w-5 h-5 text-orange-500 inline" />

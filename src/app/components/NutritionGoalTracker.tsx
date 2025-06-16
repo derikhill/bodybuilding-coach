@@ -3,14 +3,26 @@
 import { useEffect, useState } from 'react';
 import { getNutritionLogsLast7Days } from '@/lib/getNutritionLogs'; // adjust path
 // import { useUser } from '@supabase/auth-helpers-react'; // assuming you use this for auth
-import supabase from '@/lib/supabase';
+// import supabase from '@/lib/supabase';
+
+interface NutritionLog {
+  id: string;
+  date: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  notes?: string;
+}
 
 const GOALS = {
-  calories: 2600,
-  protein: 220,
-  carbs: 320,
-  fat: 70,
+  calories: 2100,
+  protein: 250,
+  carbs: 180,
+  fat: 50,
 };
+
+type NutritionKey = keyof typeof GOALS;
 
 export default function NutritionGoalTracker({userId}: { userId: string }) {
   // const user = useUser();
@@ -24,7 +36,7 @@ export default function NutritionGoalTracker({userId}: { userId: string }) {
       if (logs.length === 0) return;
 
       const totals = logs.reduce(
-        (acc: any, log: any) => {
+        (acc: { calories: number; protein: number; carbs: number; fat: number }, log: NutritionLog) => {
           acc.calories += log.calories || 0;
           acc.protein += log.protein || 0;
           acc.carbs += log.carbs || 0;
@@ -52,8 +64,8 @@ export default function NutritionGoalTracker({userId}: { userId: string }) {
 
   function getStatus(average: number, goal: number) {
     const percent = (average / goal) * 100;
-    if (percent >= 90) return '✅';
-    if (percent >= 80) return '⚠️';
+    if (percent >= 90 || percent <= 110) return '✅';
+    if (percent >= 80 || percent <= 120) return '⚠️';
     return '❌';
   }
 
@@ -65,22 +77,22 @@ export default function NutritionGoalTracker({userId}: { userId: string }) {
         <div className="flex justify-between text-slate-200 text-sm">
           <span className="capitalize">{key}</span>
           <span>
-            {averages[key]?.toFixed(0)} / {GOALS[key]} {getStatus(averages[key], GOALS[key])}
+            {averages[key as NutritionKey]?.toFixed(0)} / {GOALS[key as NutritionKey]} {getStatus(averages[key as NutritionKey], GOALS[key as NutritionKey])}
           </span>
         </div>
         <div className="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
         <div
           className={`h-full ${
-            (averages[key] / GOALS[key]) > 1.2
+            (averages[key as NutritionKey] / GOALS[key as NutritionKey]) > 1.2
               ? 'bg-purple-600' // Way over goal
-              : (averages[key] / GOALS[key]) >= 0.9
+              : (averages[key as NutritionKey] / GOALS[key as NutritionKey]) >= 0.9
               ? 'bg-green-500' // On point
-              : (averages[key] / GOALS[key]) >= 0.8
+              : (averages[key as NutritionKey] / GOALS[key as NutritionKey]) >= 0.8
               ? 'bg-yellow-400' // Close
               : 'bg-red-500'    // Too low
           }`}
           style={{
-            width: `${Math.min((averages[key] / GOALS[key]) * 100, 100)}%`,
+            width: `${Math.min((averages[key as NutritionKey] / GOALS[key as NutritionKey]) * 100, 100)}%`,
             transition: 'width 0.3s ease-in-out',
           }}
         />

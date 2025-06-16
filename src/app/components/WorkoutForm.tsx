@@ -1,7 +1,7 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import supabase from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
 interface SetForm {
   set_number: number;
@@ -26,14 +26,14 @@ interface WorkoutFormInputs {
   exercises: ExerciseForm[];
 }
 
-export default function WorkoutForm({ userId, onNewWorkout, goBack }: { userId: string, onNewWorkout: () => void }) {
+export default function WorkoutForm({ userId, onNewWorkout, goBack }: { userId: string, onNewWorkout: () => void, goBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const {
     control,
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: {},
   } = useForm<WorkoutFormInputs>({
     defaultValues: {
       title: '',
@@ -106,6 +106,7 @@ export default function WorkoutForm({ userId, onNewWorkout, goBack }: { userId: 
 
       reset();
       console.log("Workout submitted successfully!");
+      onNewWorkout();
     } catch (err) {
       console.error("Submission failed:", err);
     } finally {
@@ -316,9 +317,9 @@ export default function WorkoutForm({ userId, onNewWorkout, goBack }: { userId: 
               is_superset: false,
               notes: '',
               sets: [
-                { set_number: 1, reps: 0, weight: 0, rir: 0 },
-                { set_number: 2, reps: 0, weight: 0, rir: 0 },
-                { set_number: 3, reps: 0, weight: 0, rir: 0 }
+                { set_number: 1, reps: 0, weight: 0, rir: 0, warmup: false },
+                { set_number: 2, reps: 0, weight: 0, rir: 0, warmup: false },
+                { set_number: 3, reps: 0, weight: 0, rir: 0, warmup: false }
               ]
             })
           }

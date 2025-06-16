@@ -3,10 +3,24 @@
 import { useForm } from 'react-hook-form';
 import supabase from '@/lib/supabase'; // adjust if needed
 
-export default function NutritionLogForm({userId, goBack}: { userId: string }) {
-  const { register, handleSubmit, reset } = useForm();
+interface NutritionLogFormProps {
+  userId: string;
+  goBack: () => void;
+}
 
-  const onSubmit = async (data) => {
+interface NutritionLogFormData {
+  date: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  notes?: string;
+}
+
+export default function NutritionLogForm({ userId, goBack }: NutritionLogFormProps) {
+  const { register, handleSubmit, reset } = useForm<NutritionLogFormData>();
+
+  const onSubmit = async (data: NutritionLogFormData) => {
     const { error } = await supabase.from('nutrition_logs').insert([
       {
         ...data,

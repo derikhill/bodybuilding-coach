@@ -1,13 +1,15 @@
 import { Dumbbell, History, Apple } from 'lucide-react';
 
+type TabType = 'log' | 'history' | 'nutrition-history';
+
 export default function TabsNav({ activeTab, setActiveTab }: {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
 }) {
   const tabs = [
-    { key: 'log', label: 'Log', icon: Dumbbell },
-    { key: 'history', label: 'History', icon: History },
-    { key: 'nutrition-history', label: 'Nutrition', icon: Apple },
+    { key: 'log' as TabType, label: 'Log', icon: Dumbbell },
+    { key: 'history' as TabType, label: 'History', icon: History },
+    { key: 'nutrition-history' as TabType, label: 'Nutrition', icon: Apple },
   ];
 
   return (
